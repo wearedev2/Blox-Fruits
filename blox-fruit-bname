@@ -1,152 +1,630 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bname Key System</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Inter & JetBrains Mono -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <!-- Phosphor Icons for smooth modern UI icons -->
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-    /* Ambient Glowing Background Effect */
-    .glow-bg {
-      background: radial-gradient(circle at 50% 40%, rgba(147, 51, 234, 0.25), rgba(6, 182, 212, 0.15) 40%, rgba(15, 23, 42, 0) 70%);
-    }
-    /* Modern Glassmorphism Styling */
-    .glass-card {
-      background: rgba(30, 41, 59, 0.65);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    }
-    /* Button Glow Hover Effect */
-    .btn-glow {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .btn-glow:hover {
-      box-shadow: 0 0 25px rgba(6, 182, 212, 0.5), 0 0 10px rgba(147, 51, 234, 0.5);
-      transform: translateY(-2px);
-    }
-    .btn-glow:active {
-      transform: translateY(0);
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bname — Panel</title>
+<style>
+  :root{
+    --panel-1:#161923;
+    --panel-2:#0f1118;
+    --line:rgba(255,255,255,.08);
+    --txt:#e9eaf2;
+    --dim:#8b90a5;
+    --acc:#7c5cff;
+    --acc2:#22e6a1;
+    --warn:#ff7a45;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    /* ===== BLANK BACKGROUND ===== */
+    background: transparent;
+    font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color:var(--txt);
+    overflow:hidden;
+  }
+
+  /* ============ LAUNCHER BUTTON ============ */
+  #launcher{
+    position:fixed; right:22px; bottom:22px; z-index:9998;
+    display:flex; align-items:center; gap:9px;
+    padding:12px 18px 12px 14px;
+    border-radius:14px;
+    border:1px solid rgba(124,92,255,.45);
+    background:linear-gradient(135deg,#1b1f2d,#11131b);
+    color:#fff; font-weight:700; font-size:13px; letter-spacing:.4px;
+    cursor:pointer;
+    box-shadow:0 10px 30px rgba(124,92,255,.35), inset 0 1px 0 rgba(255,255,255,.06);
+    transition:transform .25s cubic-bezier(.2,.9,.3,1.4), opacity .25s, box-shadow .25s;
+    font-family:inherit;
+  }
+  #launcher:hover{ transform:translateY(-3px) scale(1.03); box-shadow:0 16px 40px rgba(124,92,255,.5); }
+  #launcher:active{ transform:scale(.96); }
+  #launcher.hidden{ opacity:0; transform:scale(.7) translateY(20px); pointer-events:none; }
+
+  .launch-logo{
+    width:20px; height:20px; border-radius:7px;
+    background:linear-gradient(135deg,var(--acc),var(--acc2));
+    box-shadow:0 0 14px rgba(124,92,255,.75);
+    animation:logoPulse 2.2s ease-in-out infinite;
+  }
+
+  /* ============ PANEL ============ */
+  .panel{
+    position:fixed; top:0; left:0;
+    width:334px; z-index:9999;
+    border-radius:16px;
+    background:linear-gradient(180deg,var(--panel-1),var(--panel-2));
+    border:1px solid var(--line);
+    box-shadow:
+      0 24px 70px rgba(0,0,0,.72),
+      0 0 0 1px rgba(124,92,255,.10) inset,
+      0 0 40px rgba(124,92,255,.10);
+    overflow:hidden;
+    opacity:0; visibility:hidden;
+    transform:scale(.9) translateY(14px);
+    transition:opacity .28s ease, transform .3s cubic-bezier(.2,.9,.3,1.35), visibility .3s;
+    font-size:12px;
+    user-select:none;
+  }
+  .panel.open{ opacity:1; visibility:visible; transform:scale(1) translateY(0); }
+  .panel.dragging{ transition:opacity .28s ease, transform .3s cubic-bezier(.2,.9,.3,1.35); }
+
+  /* ---- Header / drag handle ---- */
+  .head{
+    display:flex; align-items:center; gap:9px;
+    padding:11px 12px;
+    cursor:grab;
+    touch-action:none;
+    background:linear-gradient(180deg, rgba(124,92,255,.20), rgba(124,92,255,0));
+    border-bottom:1px solid var(--line);
+  }
+  .head:active{ cursor:grabbing; }
+  .logo{
+    width:19px; height:19px; border-radius:7px;
+    background:linear-gradient(135deg,var(--acc),var(--acc2));
+    box-shadow:0 0 14px rgba(124,92,255,.7);
+    animation:logoPulse 2.2s ease-in-out infinite;
+    flex:0 0 auto;
+  }
+  .brand{ font-weight:800; font-size:14px; letter-spacing:.6px; }
+  .tag{
+    font-size:9px; letter-spacing:1px; text-transform:uppercase;
+    color:var(--acc2); border:1px solid rgba(34,230,161,.35);
+    padding:2px 6px; border-radius:99px; background:rgba(34,230,161,.08);
+  }
+  .spacer{ flex:1; }
+  .close{
+    width:24px; height:24px; border-radius:8px;
+    border:1px solid var(--line); background:rgba(255,255,255,.04);
+    color:var(--dim); font-size:15px; line-height:1; cursor:pointer;
+    display:grid; place-items:center; transition:.2s; font-family:inherit;
+  }
+  .close:hover{ background:rgba(255,77,109,.18); border-color:rgba(255,77,109,.5); color:#ff8098; transform:rotate(90deg); }
+
+  /* ---- Body ---- */
+  .body{ padding:12px; max-height:70vh; overflow-y:auto; }
+  .body::-webkit-scrollbar{ width:5px; }
+  .body::-webkit-scrollbar-thumb{ background:rgba(124,92,255,.45); border-radius:99px; }
+  .body::-webkit-scrollbar-track{ background:transparent; }
+
+  /* ---- Loader rows ---- */
+  .row{ margin-bottom:9px; }
+  .row-top{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:10.5px; letter-spacing:.4px; color:var(--dim); margin-bottom:5px;
+  }
+  .row-top .val{ font-variant-numeric:tabular-nums; color:#c9cbe0; font-weight:600; }
+  .row.done .row-top .val{ color:var(--acc2); }
+
+  .bar{
+    position:relative; height:6px; border-radius:99px;
+    background:rgba(255,255,255,.07); overflow:hidden;
+  }
+  .bar i{
+    position:relative; display:block; height:100%; width:0%;
+    border-radius:99px; overflow:hidden;
+    background:linear-gradient(90deg,var(--acc),#b39dff);
+    box-shadow:0 0 10px rgba(124,92,255,.6);
+    transition:width .09s linear;
+  }
+  .bar i::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+    transform:translateX(-100%);
+    animation:shine 1.5s linear infinite;
+  }
+  .row.key .bar i{
+    background:linear-gradient(90deg,var(--warn),#ff4d6d);
+    box-shadow:0 0 10px rgba(255,77,109,.55);
+  }
+  .row.key.stuck .bar i{ animation:keyPulse 1.4s ease-in-out infinite; }
+
+  .key-note{
+    display:none; margin-top:7px;
+    font-size:10.5px; line-height:1.5; color:#ffb08f;
+    cursor:pointer; border-radius:8px; padding:5px 7px;
+    background:rgba(255,122,69,.08);
+    border:1px dashed rgba(255,122,69,.35);
+    transition:.2s;
+  }
+  .key-note:hover{ background:rgba(255,122,69,.16); color:#ffd0bd; }
+  .key-note.show{ display:block; animation:fadeUp .4s ease both; }
+
+  /* ---- Script box ---- */
+  .code-head{
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:10px; letter-spacing:.8px; text-transform:uppercase;
+    color:var(--dim); margin:12px 0 6px;
+  }
+  .code-head b{ color:#cfd2e6; letter-spacing:.5px; text-transform:none; font-size:11px; }
+  .dots{ display:flex; gap:4px; }
+  .dots span{ width:6px; height:6px; border-radius:99px; background:rgba(255,255,255,.14); }
+
+  .code{
+    margin:0;
+    background:#090a10;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:9px 10px;
+    max-height:84px; overflow:auto;
+    font-family:ui-monospace,Consolas,"Courier New",monospace;
+    font-size:10.5px; line-height:1.6;
+    color:#9fe7c8; white-space:pre;
+    user-select:text;
+  }
+  .code::-webkit-scrollbar{ width:5px; height:5px; }
+  .code::-webkit-scrollbar-thumb{ background:rgba(124,92,255,.4); border-radius:99px; }
+
+  /* ---- Get Key button ---- */
+  .getkey{
+    position:relative; overflow:hidden;
+    width:100%; margin-top:11px; padding:11px;
+    border:0; border-radius:11px; cursor:pointer;
+    font-family:inherit; font-weight:800; font-size:12.5px; letter-spacing:.8px;
+    color:#0a0b12; text-transform:uppercase;
+    background:linear-gradient(120deg,#22e6a1,#7c5cff,#22e6a1);
+    background-size:220% 220%;
+    animation:gradShift 4s linear infinite;
+    box-shadow:0 8px 24px rgba(124,92,255,.38);
+    transition:transform .15s ease, box-shadow .2s;
+  }
+  .getkey:hover{ transform:translateY(-2px); box-shadow:0 14px 34px rgba(124,92,255,.55); }
+  .getkey:active{ transform:scale(.97); }
+  .getkey::after{
+    content:""; position:absolute; top:0; left:-60%; width:40%; height:100%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);
+    transform:skewX(-20deg);
+    animation:sweep 2.8s ease-in-out infinite;
+  }
+
+  .note{
+    margin:9px 0 0; text-align:center;
+    font-size:10.5px; line-height:1.5; color:var(--dim);
+  }
+  .note b{ color:#cfd2e6; }
+
+  /* ---- Manual copy fallback box ---- */
+  .copy-fallback{
+    display:none;
+    margin-top:9px;
+    padding:8px;
+    border-radius:10px;
+    background:rgba(255,122,69,.07);
+    border:1px dashed rgba(255,122,69,.4);
+  }
+  .copy-fallback.show{ display:block; animation:fadeUp .3s ease both; }
+  .cf-label{
+    font-size:9.5px; letter-spacing:.6px; text-transform:uppercase;
+    color:#ffb08f; margin-bottom:5px; font-weight:700;
+  }
+  .cf-row{ display:flex; gap:6px; }
+  .cf-input{
+    flex:1; min-width:0;
+    padding:7px 8px; border-radius:8px;
+    background:#090a10;
+    border:1px solid rgba(255,122,69,.35);
+    color:#e9eaf2; font-size:10px;
+    font-family:ui-monospace,Consolas,monospace;
+    user-select:text;
+  }
+  .cf-input:focus{ outline:none; border-color:var(--acc2); box-shadow:0 0 0 2px rgba(34,230,161,.18); }
+  .cf-copy{
+    flex:0 0 auto;
+    padding:7px 11px; border-radius:8px; border:0;
+    background:linear-gradient(135deg,#22e6a1,#7c5cff);
+    color:#0a0b12; font-weight:800; font-size:10px; letter-spacing:.5px;
+    cursor:pointer; font-family:inherit;
+    transition:transform .15s;
+  }
+  .cf-copy:active{ transform:scale(.94); }
+
+  /* ---- Status strip ---- */
+  .status{
+    display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;
+    margin-top:11px; padding-top:11px;
+    border-top:1px solid var(--line);
+  }
+  .stat{
+    background:rgba(255,255,255,.035);
+    border:1px solid var(--line);
+    border-radius:9px; padding:6px 4px; text-align:center;
+    transition:.2s;
+  }
+  .stat:hover{ background:rgba(124,92,255,.12); border-color:rgba(124,92,255,.35); }
+  .stat span{
+    display:block; font-size:8.5px; letter-spacing:.9px;
+    text-transform:uppercase; color:var(--dim); margin-bottom:3px;
+  }
+  .stat b{ font-size:10.5px; font-weight:700; }
+  .ok{ color:var(--acc2); text-shadow:0 0 10px rgba(34,230,161,.5); }
+  .main{ color:#b39dff; }
+  .free{ color:#7fd4ff; }
+
+  /* ---- Toast ---- */
+  #toast{
+    position:fixed; left:50%; bottom:36px; transform:translate(-50%,20px);
+    z-index:10000;
+    padding:10px 18px; border-radius:11px;
+    background:linear-gradient(135deg,#1c2030,#12141c);
+    border:1px solid rgba(34,230,161,.45);
+    color:var(--acc2); font-size:12px; font-weight:600; letter-spacing:.3px;
+    box-shadow:0 12px 36px rgba(0,0,0,.6), 0 0 22px rgba(34,230,161,.2);
+    opacity:0; pointer-events:none;
+    transition:opacity .3s, transform .3s cubic-bezier(.2,.9,.3,1.4);
+    font-family:inherit;
+  }
+  #toast.show{ opacity:1; transform:translate(-50%,0); }
+  #toast.warn{
+    border-color:rgba(255,122,69,.5);
+    color:#ffb08f;
+    box-shadow:0 12px 36px rgba(0,0,0,.6), 0 0 22px rgba(255,122,69,.2);
+  }
+
+  /* ============ ANIMATIONS ============ */
+  @keyframes shine{ 0%{transform:translateX(-100%);} 100%{transform:translateX(250%);} }
+  @keyframes logoPulse{
+    0%,100%{ box-shadow:0 0 10px rgba(124,92,255,.55); }
+    50%{ box-shadow:0 0 22px rgba(34,230,161,.85); }
+  }
+  @keyframes gradShift{ 0%{background-position:0% 50%;} 100%{background-position:200% 50%;} }
+  @keyframes sweep{ 0%,60%{left:-60%;} 100%{left:130%;} }
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+  @keyframes keyPulse{ 0%,100%{ filter:brightness(1); } 50%{ filter:brightness(1.5); } }
+</style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+<body>
 
-  <!-- Ambient Light Effects -->
-  <div class="absolute inset-0 glow-bg pointer-events-none"></div>
-  <div class="absolute -top-32 -left-32 w-80 h-80 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
-  <div class="absolute -bottom-32 -right-32 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
+<!-- ================= LAUNCHER ================= -->
+<button id="launcher" aria-label="Open Bname panel">
+  <span class="launch-logo"></span> Bname
+</button>
 
-  <!-- Hidden text area for reliable clipboard copy workaround -->
-  <textarea id="copyBuffer" class="sr-only" aria-hidden="true"></textarea>
+<!-- ================= PANEL ================= -->
+<div class="panel" id="bnamePanel" role="dialog" aria-label="Bname">
 
-  <!-- Key System Card -->
-  <main class="w-full max-w-md glass-card rounded-3xl p-6 sm:p-8 relative z-10 border border-slate-700/50">
-    
-    <!-- Header / Branding -->
-    <div class="text-center mb-6">
-      <!-- Neon Logo Emblem -->
-      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-400 p-[2px] shadow-lg shadow-purple-500/30 mb-4 group transition-transform duration-300 hover:scale-105">
-        <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-          <i class="ph-bold ph-key-return text-3xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400"></i>
-        </div>
+  <!-- Header (drag handle) -->
+  <div class="head" id="head">
+    <span class="logo"></span>
+    <span class="brand">Bname</span>
+    <span class="tag">hub</span>
+    <span class="spacer"></span>
+    <button class="close" id="closeBtn" title="Close">&times;</button>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+
+    <!-- Row 1 : Loading -->
+    <div class="row" id="row-load">
+      <div class="row-top"><span>Loading</span><span class="val" id="pct-load">0%</span></div>
+      <div class="bar"><i id="bar-load"></i></div>
+    </div>
+
+    <!-- Row 2 : Connecting -->
+    <div class="row" id="row-conn">
+      <div class="row-top"><span>Connecting</span><span class="val" id="pct-conn">0%</span></div>
+      <div class="bar"><i id="bar-conn"></i></div>
+    </div>
+
+    <!-- Row 3 : Key (never completes) -->
+    <div class="row key" id="row-key">
+      <div class="row-top"><span>Key</span><span class="val" id="pct-key">0%</span></div>
+      <div class="bar"><i id="bar-key"></i></div>
+      <div class="key-note" id="keyNote">
+        click here and You need to join our communities
       </div>
-      
-      <h1 class="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
-        BNAME <span class="text-cyan-400">HUB</span>
-      </h1>
-      <p class="text-xs uppercase tracking-widest font-semibold text-slate-400 mt-1">Key Authorization System</p>
     </div>
 
-    <!-- Alert / Requirement Box -->
-    <div class="bg-purple-950/40 border border-purple-500/30 rounded-2xl p-4 mb-6 flex items-start gap-3.5">
-      <div class="p-2 bg-purple-500/10 rounded-xl text-purple-400 shrink-0 mt-0.5">
-        <i class="ph-bold ph-users-three text-xl"></i>
+    <!-- Script -->
+    <div class="code-head">
+      <b>Blox Fruit Script</b>
+      <span class="dots"><span></span><span></span><span></span></span>
+    </div>
+    <pre class="code">-- Bname | Blox Fruit
+-- Loader : Bname Hub
+-- Build  : 1.0.4
+
+print("Bname ready")
+wait(0.2)
+loadstring("-- script --")()</pre>
+
+    <!-- Get Key -->
+    <button class="getkey" id="getKeyBtn">Get Key</button>
+
+    <!-- Manual copy fallback (only shown if clipboard is blocked) -->
+    <div class="copy-fallback" id="copyFallback">
+      <div class="cf-label">Copy blocked — press Ctrl+C</div>
+      <div class="cf-row">
+        <input class="cf-input" id="cfInput" readonly />
+        <button class="cf-copy" id="cfCopyBtn" type="button">Copy</button>
       </div>
-      <div>
-        <h2 class="text-sm font-semibold text-purple-200 mb-0.5">Community Required</h2>
-        <p class="text-xs text-slate-300 leading-relaxed">
-          To run script u must join our community.
-        </p>
-      </div>
     </div>
 
-    <!-- Key Actions -->
-    <div class="space-y-3">
-      <!-- Primary Action Button -->
-      <button id="getKeyBtn" onclick="copyCommunityLink()" class="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-bold text-sm tracking-wide flex items-center justify-center gap-2.5 btn-glow shadow-lg shadow-purple-900/40 cursor-pointer">
-        <i class="ph-bold ph-key text-lg"></i>
-        <span>Get Key</span>
-      </button>
+    <p class="note">To run script u must join our <b>community</b>.</p>
 
-      <!-- Subtext note -->
-      <p class="text-center text-[11px] text-slate-400">
-        Clicking will copy the official access link to your clipboard.
-      </p>
+    <!-- Status -->
+    <div class="status">
+      <div class="stat"><span>Status</span><b class="ok">undetected</b></div>
+      <div class="stat"><span>Main</span><b class="main">Bloxfruit</b></div>
+      <div class="stat"><span>Key</span><b class="free">not required</b></div>
     </div>
 
-    <!-- Modern Toast Notification -->
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-cyan-500/40 text-cyan-200 px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 text-xs font-medium transition-all duration-300 opacity-0 translate-y-4 pointer-events-none backdrop-blur-md">
-      <div class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></div>
-      <i class="ph-bold ph-check-circle text-cyan-400 text-lg"></i>
-      <span>Link copied to clipboard!</span>
-    </div>
+  </div>
+</div>
 
-  </main>
+<!-- ================= TOAST ================= -->
+<div id="toast">Link copied to clipboard</div>
 
-  <script>
-    // Target community URL
-    const TARGET_LINK = "https://www.roblox.rw/communities/798537981879/bname";
+<script>
+(function () {
+  "use strict";
 
-    function copyCommunityLink() {
-      // Reliable copy method for frame environments
-      const buffer = document.getElementById("copyBuffer");
-      buffer.value = TARGET_LINK;
-      buffer.select();
-      buffer.setSelectionRange(0, 99999); // Mobile support
+  const LINK = "https://www.roblox.rw/communities/798537981879/bname";
 
-      try {
-        document.execCommand('copy');
-        showToast();
-      } catch (err) {
-        // Fallback using modern clipboard API if execCommand fails
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(TARGET_LINK).then(() => {
-            showToast();
-          });
-        }
+  const panel    = document.getElementById("bnamePanel");
+  const launcher = document.getElementById("launcher");
+  const head     = document.getElementById("head");
+  const closeBtn = document.getElementById("closeBtn");
+  const keyNote  = document.getElementById("keyNote");
+  const getKey   = document.getElementById("getKeyBtn");
+  const toastEl  = document.getElementById("toast");
+  const rowKey   = document.getElementById("row-key");
+
+  const fallbackBox = document.getElementById("copyFallback");
+  const cfInput     = document.getElementById("cfInput");
+  const cfCopyBtn   = document.getElementById("cfCopyBtn");
+  cfInput.value = LINK;
+
+  let positioned = false;
+  let seqToken   = 0;
+
+  /* ---------------- Drag logic ---------------- */
+  let dragging = false, offX = 0, offY = 0;
+
+  head.addEventListener("pointerdown", (e) => {
+    if (e.target.closest(".close")) return;
+    dragging = true;
+    head.setPointerCapture(e.pointerId);
+    const r = panel.getBoundingClientRect();
+    offX = e.clientX - r.left;
+    offY = e.clientY - r.top;
+    panel.classList.add("dragging");
+  });
+
+  head.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    let x = e.clientX - offX;
+    let y = e.clientY - offY;
+    x = Math.min(Math.max(8, x), window.innerWidth  - w - 8);
+    y = Math.min(Math.max(8, y), window.innerHeight - h - 8);
+    panel.style.left = x + "px";
+    panel.style.top  = y + "px";
+  });
+
+  const stopDrag = (e) => {
+    if (!dragging) return;
+    dragging = false;
+    panel.classList.remove("dragging");
+    try { head.releasePointerCapture(e.pointerId); } catch (_) {}
+  };
+  head.addEventListener("pointerup", stopDrag);
+  head.addEventListener("pointercancel", stopDrag);
+
+  /* ---------------- Open / Close ---------------- */
+  function centerPanel() {
+    const w = panel.offsetWidth  || 334;
+    const h = panel.offsetHeight || 460;
+    panel.style.left = Math.max(10, (window.innerWidth  - w) / 2) + "px";
+    panel.style.top  = Math.max(10, (window.innerHeight - h) / 2) + "px";
+  }
+
+  function openPanel() {
+    if (!positioned) { centerPanel(); positioned = true; }
+    panel.classList.add("open");
+    launcher.classList.add("hidden");
+    runSequence();
+  }
+
+  function closePanel() {
+    panel.classList.remove("open");
+    launcher.classList.remove("hidden");
+    seqToken++;
+  }
+
+  launcher.addEventListener("click", openPanel);
+  closeBtn.addEventListener("click", closePanel);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && panel.classList.contains("open")) closePanel();
+  });
+
+  /* ---------------- Loading sequence ---------------- */
+  function fill(barEl, pctEl, target, duration, token) {
+    return new Promise((resolve) => {
+      const from = parseFloat(barEl.style.width) || 0;
+      const start = performance.now();
+      function step(now) {
+        if (token !== seqToken) return resolve();
+        const p = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - p, 3);
+        const value = from + (target - from) * eased;
+        barEl.style.width = value + "%";
+        pctEl.textContent = Math.round(value) + "%";
+        if (p < 1) requestAnimationFrame(step);
+        else resolve();
       }
+      requestAnimationFrame(step);
+    });
+  }
+
+  function resetSequence() {
+    ["load", "conn", "key"].forEach((k) => {
+      document.getElementById("bar-" + k).style.width = "0%";
+      document.getElementById("pct-" + k).textContent = "0%";
+      document.getElementById("row-" + k).classList.remove("done");
+    });
+    rowKey.classList.remove("stuck");
+    keyNote.classList.remove("show");
+  }
+
+  async function runSequence() {
+    const token = ++seqToken;
+    resetSequence();
+
+    await fill(
+      document.getElementById("bar-load"),
+      document.getElementById("pct-load"),
+      100, 950, token
+    );
+    if (token !== seqToken) return;
+    document.getElementById("row-load").classList.add("done");
+
+    await fill(
+      document.getElementById("bar-conn"),
+      document.getElementById("pct-conn"),
+      100, 850, token
+    );
+    if (token !== seqToken) return;
+    document.getElementById("row-conn").classList.add("done");
+
+    await fill(
+      document.getElementById("bar-key"),
+      document.getElementById("pct-key"),
+      58, 750, token
+    );
+    if (token !== seqToken) return;
+    rowKey.classList.add("stuck");
+    keyNote.classList.add("show");
+  }
+
+  /* ---------------- ROBUST COPY ---------------- */
+  function legacyCopy(text) {
+    // Must run synchronously inside a user-gesture handler
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText =
+      "position:fixed;top:0;left:0;width:2em;height:2em;" +
+      "padding:0;border:none;outline:none;box-shadow:none;" +
+      "background:transparent;opacity:0;z-index:-1;";
+    document.body.appendChild(ta);
+
+    const sel = document.getSelection();
+    const savedRange = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (_) { ok = false; }
+
+    document.body.removeChild(ta);
+    if (savedRange && sel) {
+      sel.removeAllRanges();
+      sel.addRange(savedRange);
+    }
+    return ok;
+  }
+
+  let toastTimer = null;
+  function showToast(msg, warn) {
+    toastEl.textContent = msg;
+    toastEl.classList.toggle("warn", !!warn);
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
+  }
+
+  function showManualFallback() {
+    fallbackBox.classList.add("show");
+    setTimeout(() => {
+      cfInput.focus();
+      cfInput.select();
+      cfInput.setSelectionRange(0, cfInput.value.length);
+    }, 60);
+    showToast("Copy blocked — press Ctrl+C in the box", true);
+  }
+
+  async function copyLink() {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      try {
+        await navigator.clipboard.writeText(LINK);
+        fallbackBox.classList.remove("show");
+        showToast("Link copied to clipboard");
+        return;
+      } catch (_) { /* fall through */ }
     }
 
-    let toastTimeout;
-    function showToast() {
-      const toast = document.getElementById("toast");
-      
-      // Reset state if clicked rapidly
-      clearTimeout(toastTimeout);
-      
-      // Reveal toast
-      toast.classList.remove("opacity-0", "translate-y-4", "pointer-events-none");
-      toast.classList.add("opacity-100", "translate-y-0");
-
-      // Hide toast after 3 seconds
-      toastTimeout = setTimeout(() => {
-        toast.classList.remove("opacity-100", "translate-y-0");
-        toast.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
-      }, 3000);
+    if (legacyCopy(LINK)) {
+      fallbackBox.classList.remove("show");
+      showToast("Link copied to clipboard");
+      return;
     }
-  </script>
+
+    showManualFallback();
+  }
+
+  getKey.addEventListener("click", () => {
+    // Sync legacy copy first — best chance inside a real click gesture
+    if (legacyCopy(LINK)) {
+      fallbackBox.classList.remove("show");
+      showToast("Link copied to clipboard");
+      return;
+    }
+    copyLink();
+  });
+
+  keyNote.addEventListener("click", copyLink);
+
+  cfCopyBtn.addEventListener("click", () => {
+    if (legacyCopy(LINK)) {
+      fallbackBox.classList.remove("show");
+      showToast("Link copied to clipboard");
+    } else {
+      cfInput.focus();
+      cfInput.select();
+      showToast("Press Ctrl+C to copy", true);
+    }
+  });
+
+  cfInput.addEventListener("focus", () => cfInput.select());
+  cfInput.addEventListener("click", () => cfInput.select());
+
+  /* keep panel inside viewport on resize */
+  window.addEventListener("resize", () => {
+    if (!positioned) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    let x = parseFloat(panel.style.left) || 0;
+    let y = parseFloat(panel.style.top)  || 0;
+    panel.style.left = Math.min(Math.max(8, x), window.innerWidth  - w - 8) + "px";
+    panel.style.top  = Math.min(Math.max(8, y), window.innerHeight - h - 8) + "px";
+  });
+})();
+</script>
 </body>
 </html>
