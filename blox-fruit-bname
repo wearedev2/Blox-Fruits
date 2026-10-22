@@ -1,5 +1,5 @@
 -- Bname Panel — Compact Roblox GUI (LocalScript)
--- Drop into StarterPlayerScripts or run via an executor.
+-- Opens in the middle of the screen on load with a pop-in animation.
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -9,18 +9,17 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Clean any previous instance
 local old = playerGui:FindFirstChild("BnamePanel")
 if old then old:Destroy() end
 
--- ===================== CONSTANTS =====================
+-- ─── COLORS ───────────────────────────────────────
 local ACCENT    = Color3.fromRGB(124, 92, 255)
 local ACCENT2   = Color3.fromRGB(34, 230, 161)
 local WARN      = Color3.fromRGB(255, 122, 69)
 local PURPLE_LT = Color3.fromRGB(179, 157, 255)
 local BLUE_LT   = Color3.fromRGB(127, 212, 255)
 local BG_MAIN   = Color3.fromRGB(18, 20, 28)
-local BG_HEAD   = Color3.fromRGB(28, 32, 44)
+local BG_HEAD   = Color3.fromRGB(30, 34, 46)
 local BG_CODE   = Color3.fromRGB(9, 10, 16)
 local BG_STAT   = Color3.fromRGB(44, 48, 62)
 local TXT_MAIN  = Color3.fromRGB(233, 234, 242)
@@ -28,9 +27,9 @@ local TXT_DIM   = Color3.fromRGB(139, 144, 165)
 local TXT_PCT   = Color3.fromRGB(201, 203, 224)
 local LINK      = "https://www.roblox.rw/communities/798537981879/bname"
 
-local PANEL_W, PANEL_H = 270, 330
+local PANEL_W, PANEL_H = 270, 340
 
--- ===================== SCREEN GUI =====================
+-- ─── SCREEN GUI ───────────────────────────────────
 local gui = Instance.new("ScreenGui")
 gui.Name = "BnamePanel"
 gui.ResetOnSpawn = false
@@ -38,52 +37,7 @@ gui.IgnoreGuiInset = true
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = playerGui
 
--- ===================== LAUNCHER =====================
-local launcher = Instance.new("TextButton")
-launcher.Name = "Launcher"
-launcher.AnchorPoint = Vector2.new(1, 1)
-launcher.Size = UDim2.new(0, 100, 0, 38)
-launcher.Position = UDim2.new(1, -18, 1, -18)
-launcher.BackgroundColor3 = BG_MAIN
-launcher.Text = ""
-launcher.AutoButtonColor = false
-launcher.Parent = gui
-Instance.new("UICorner", launcher).CornerRadius = UDim.new(0, 12)
-
-local launcherGradient = Instance.new("UIGradient")
-launcherGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(32, 36, 50)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 20, 28)),
-})
-launcherGradient.Rotation = 135
-launcherGradient.Parent = launcher
-
-local launcherStroke = Instance.new("UIStroke")
-launcherStroke.Color = ACCENT
-launcherStroke.Thickness = 1
-launcherStroke.Transparency = 0.45
-launcherStroke.Parent = launcher
-
-local logoDot = Instance.new("Frame")
-logoDot.Size = UDim2.new(0, 16, 0, 16)
-logoDot.Position = UDim2.new(0, 12, 0.5, -8)
-logoDot.BackgroundColor3 = ACCENT2
-logoDot.BorderSizePixel = 0
-logoDot.Parent = launcher
-Instance.new("UICorner", logoDot).CornerRadius = UDim.new(0, 5)
-
-local launcherLabel = Instance.new("TextLabel")
-launcherLabel.Size = UDim2.new(1, -36, 1, 0)
-launcherLabel.Position = UDim2.new(0, 32, 0, 0)
-launcherLabel.BackgroundTransparency = 1
-launcherLabel.Text = "Bname"
-launcherLabel.TextColor3 = TXT_MAIN
-launcherLabel.Font = Enum.Font.GothamBold
-launcherLabel.TextSize = 13
-launcherLabel.TextXAlignment = Enum.TextXAlignment.Left
-launcherLabel.Parent = launcher
-
--- ===================== MAIN FRAME =====================
+-- ─── MAIN FRAME ───────────────────────────────────
 local main = Instance.new("Frame")
 main.Name = "MainFrame"
 main.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -91,95 +45,81 @@ main.Size = UDim2.new(0, PANEL_W, 0, PANEL_H)
 main.Position = UDim2.new(0.5, 0, 0.5, 0)
 main.BackgroundColor3 = BG_MAIN
 main.BorderSizePixel = 0
+main.ClipsDescendants = true
 main.Visible = false
 main.Parent = gui
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 14)
 
 local mainStroke = Instance.new("UIStroke")
 mainStroke.Color = ACCENT
-mainStroke.Thickness = 1
-mainStroke.Transparency = 0.7
+mainStroke.Thickness = 1.5
+mainStroke.Transparency = 0.55
 mainStroke.Parent = main
 
 local mainScale = Instance.new("UIScale")
 mainScale.Scale = 1
 mainScale.Parent = main
 
--- ---- Header ----
+-- ─── HEADER ───────────────────────────────────────
 local header = Instance.new("Frame")
-header.Size = UDim2.new(1, 0, 0, 32)
+header.Size = UDim2.new(1, 0, 0, 30)
 header.BackgroundColor3 = BG_HEAD
-header.BackgroundTransparency = 0.15
 header.BorderSizePixel = 0
 header.Parent = main
-Instance.new("UICorner", header).CornerRadius = UDim.new(0, 14)
-
--- Cover rounded bottom of the header
-local headerCover = Instance.new("Frame")
-headerCover.Size = UDim2.new(1, 0, 0, 14)
-headerCover.Position = UDim2.new(0, 0, 1, -14)
-headerCover.BackgroundColor3 = BG_MAIN
-headerCover.BackgroundTransparency = 0.15
-headerCover.BorderSizePixel = 0
-headerCover.ZIndex = 2
-headerCover.Parent = header
 
 local title = Instance.new("TextLabel")
 title.Text = "Bname"
-title.Size = UDim2.new(0, 80, 1, 0)
-title.Position = UDim2.new(0, 12, 0, 0)
+title.Size = UDim2.new(0, 70, 1, 0)
+title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
 title.TextColor3 = TXT_MAIN
 title.Font = Enum.Font.GothamBold
 title.TextSize = 13
 title.TextXAlignment = Enum.TextXAlignment.Left
-title.ZIndex = 3
 title.Parent = header
 
 local tag = Instance.new("TextLabel")
 tag.Text = "HUB"
-tag.Size = UDim2.new(0, 30, 0, 14)
-tag.Position = UDim2.new(0, 84, 0.5, -7)
+tag.Size = UDim2.new(0, 26, 0, 12)
+tag.Position = UDim2.new(0, 76, 0.5, -6)
 tag.BackgroundColor3 = ACCENT2
 tag.BackgroundTransparency = 0.85
 tag.TextColor3 = ACCENT2
 tag.Font = Enum.Font.GothamBold
-tag.TextSize = 8
-tag.ZIndex = 3
+tag.TextSize = 7
 tag.Parent = header
-Instance.new("UICorner", tag).CornerRadius = UDim.new(0, 5)
+Instance.new("UICorner", tag).CornerRadius = UDim.new(0, 4)
 
 local closeBtn = Instance.new("TextButton")
 closeBtn.Text = "×"
-closeBtn.Size = UDim2.new(0, 24, 0, 24)
-closeBtn.Position = UDim2.new(1, -32, 0.5, -12)
+closeBtn.Size = UDim2.new(0, 20, 0, 20)
+closeBtn.Position = UDim2.new(1, -28, 0.5, -10)
 closeBtn.BackgroundColor3 = BG_STAT
 closeBtn.TextColor3 = TXT_DIM
 closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 16
+closeBtn.TextSize = 14
 closeBtn.AutoButtonColor = false
-closeBtn.ZIndex = 3
 closeBtn.Parent = header
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 7)
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
 
--- ---- Body ----
+-- ─── BODY ─────────────────────────────────────────
 local body = Instance.new("Frame")
-body.Size = UDim2.new(1, -12, 1, -40)
-body.Position = UDim2.new(0, 6, 0, 36)
+body.Size = UDim2.new(1, -14, 1, -40)
+body.Position = UDim2.new(0, 7, 0, 36)
 body.BackgroundTransparency = 1
 body.Parent = main
 
--- ---- Row builder ----
-local function makeRow(y, labelText, barColor)
+-- ─── ROW BUILDER ──────────────────────────────────
+local function makeRow(y, labelText)
     local row = Instance.new("Frame")
-    row.Size = UDim2.new(1, 0, 0, 24)
+    row.Size = UDim2.new(1, 0, 0, 22)
     row.Position = UDim2.new(0, 0, 0, y)
     row.BackgroundTransparency = 1
     row.Parent = body
 
     local lbl = Instance.new("TextLabel")
     lbl.Text = labelText
-    lbl.Size = UDim2.new(0, 100, 0, 14)
+    lbl.Size = UDim2.new(0, 100, 0, 13)
     lbl.BackgroundTransparency = 1
     lbl.TextColor3 = TXT_DIM
     lbl.Font = Enum.Font.Gotham
@@ -189,7 +129,7 @@ local function makeRow(y, labelText, barColor)
 
     local pct = Instance.new("TextLabel")
     pct.Text = "0%"
-    pct.Size = UDim2.new(0, 40, 0, 14)
+    pct.Size = UDim2.new(0, 40, 0, 13)
     pct.Position = UDim2.new(1, -40, 0, 0)
     pct.BackgroundTransparency = 1
     pct.TextColor3 = TXT_PCT
@@ -200,7 +140,7 @@ local function makeRow(y, labelText, barColor)
 
     local bg = Instance.new("Frame")
     bg.Size = UDim2.new(1, 0, 0, 4)
-    bg.Position = UDim2.new(0, 0, 0, 18)
+    bg.Position = UDim2.new(0, 0, 0, 16)
     bg.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     bg.BackgroundTransparency = 0.92
     bg.BorderSizePixel = 0
@@ -209,23 +149,24 @@ local function makeRow(y, labelText, barColor)
 
     local fill = Instance.new("Frame")
     fill.Size = UDim2.new(0, 0, 1, 0)
-    fill.BackgroundColor3 = barColor
+    fill.BackgroundColor3 = ACCENT
     fill.BorderSizePixel = 0
     fill.Parent = bg
     Instance.new("UICorner", fill).CornerRadius = UDim.new(0, 99)
 
-    return row, fill, pct
+    return fill, pct
 end
 
-local _, barLoad, pctLoad = makeRow(4,  "Loading", ACCENT)
-local _, barConn, pctConn = makeRow(32, "Connecting", ACCENT)
-local _, barKey,  pctKey  = makeRow(60, "Key", WARN)
+local barLoad, pctLoad = makeRow(2,  "Loading")
+local barConn, pctConn = makeRow(28, "Connecting")
+local barKey,  pctKey  = makeRow(54, "Key")
+barKey.BackgroundColor3 = WARN
 
--- ---- Key note ----
+-- ─── KEY NOTE ─────────────────────────────────────
 local keyNote = Instance.new("TextLabel")
 keyNote.Text = "click here and You need to join our communities"
-keyNote.Size = UDim2.new(1, 0, 0, 26)
-keyNote.Position = UDim2.new(0, 0, 0, 90)
+keyNote.Size = UDim2.new(1, 0, 0, 24)
+keyNote.Position = UDim2.new(0, 0, 0, 82)
 keyNote.BackgroundColor3 = WARN
 keyNote.BackgroundTransparency = 0.9
 keyNote.TextColor3 = Color3.fromRGB(255, 176, 143)
@@ -236,11 +177,11 @@ keyNote.Visible = false
 keyNote.Parent = body
 Instance.new("UICorner", keyNote).CornerRadius = UDim.new(0, 6)
 
--- ---- Script box ----
+-- ─── SCRIPT BOX ───────────────────────────────────
 local scriptBox = Instance.new("TextLabel")
 scriptBox.Text = "-- Bname | Blox Fruit\n-- Loader : Bname Hub\n-- Build  : 1.0.4\nprint(\"Bname ready\")"
-scriptBox.Size = UDim2.new(1, 0, 0, 52)
-scriptBox.Position = UDim2.new(0, 0, 0, 122)
+scriptBox.Size = UDim2.new(1, 0, 0, 50)
+scriptBox.Position = UDim2.new(0, 0, 0, 112)
 scriptBox.BackgroundColor3 = BG_CODE
 scriptBox.TextColor3 = Color3.fromRGB(159, 231, 200)
 scriptBox.Font = Enum.Font.Code
@@ -252,18 +193,18 @@ Instance.new("UICorner", scriptBox).CornerRadius = UDim.new(0, 8)
 
 local pad = Instance.new("UIPadding")
 pad.PaddingLeft = UDim.new(0, 8)
-pad.PaddingTop = UDim.new(0, 6)
+pad.PaddingTop = UDim.new(0, 5)
 pad.Parent = scriptBox
 
--- ---- Get Key button ----
+-- ─── GET KEY BUTTON ───────────────────────────────
 local getKeyBtn = Instance.new("TextButton")
 getKeyBtn.Text = "GET KEY"
-getKeyBtn.Size = UDim2.new(1, 0, 0, 34)
-getKeyBtn.Position = UDim2.new(0, 0, 0, 180)
+getKeyBtn.Size = UDim2.new(1, 0, 0, 32)
+getKeyBtn.Position = UDim2.new(0, 0, 0, 168)
 getKeyBtn.BackgroundColor3 = ACCENT2
 getKeyBtn.TextColor3 = Color3.fromRGB(10, 11, 18)
 getKeyBtn.Font = Enum.Font.GothamBold
-getKeyBtn.TextSize = 12
+getKeyBtn.TextSize = 11
 getKeyBtn.AutoButtonColor = false
 getKeyBtn.Parent = body
 Instance.new("UICorner", getKeyBtn).CornerRadius = UDim.new(0, 9)
@@ -271,28 +212,28 @@ Instance.new("UICorner", getKeyBtn).CornerRadius = UDim.new(0, 9)
 local btnStroke = Instance.new("UIStroke")
 btnStroke.Color = ACCENT2
 btnStroke.Thickness = 2
-btnStroke.Transparency = 0.55
+btnStroke.Transparency = 0.5
 btnStroke.Parent = getKeyBtn
 
 local btnScale = Instance.new("UIScale")
 btnScale.Scale = 1
 btnScale.Parent = getKeyBtn
 
--- ---- Footer note ----
+-- ─── FOOTER ───────────────────────────────────────
 local footer = Instance.new("TextLabel")
 footer.Text = "To run script u must join our community."
-footer.Size = UDim2.new(1, 0, 0, 16)
-footer.Position = UDim2.new(0, 0, 0, 220)
+footer.Size = UDim2.new(1, 0, 0, 14)
+footer.Position = UDim2.new(0, 0, 0, 206)
 footer.BackgroundTransparency = 1
 footer.TextColor3 = TXT_DIM
 footer.Font = Enum.Font.Gotham
 footer.TextSize = 9
 footer.Parent = body
 
--- ---- Status strip ----
+-- ─── STATUS STRIP ─────────────────────────────────
 local statusRow = Instance.new("Frame")
 statusRow.Size = UDim2.new(1, 0, 0, 32)
-statusRow.Position = UDim2.new(0, 0, 0, 244)
+statusRow.Position = UDim2.new(0, 0, 0, 226)
 statusRow.BackgroundTransparency = 1
 statusRow.Parent = body
 
@@ -330,11 +271,11 @@ makeStat(0,    "Status", "undetected",   ACCENT2)
 makeStat(0.34, "Main",   "Bloxfruit",    PURPLE_LT)
 makeStat(0.68, "Key",    "not required", BLUE_LT)
 
--- ---- Manual copy fallback (hidden by default) ----
+-- ─── MANUAL COPY BOX ──────────────────────────────
 local manualBox = Instance.new("TextBox")
 manualBox.Text = LINK
-manualBox.Size = UDim2.new(1, 0, 0, 24)
-manualBox.Position = UDim2.new(0, 0, 0, 278)
+manualBox.Size = UDim2.new(1, 0, 0, 22)
+manualBox.Position = UDim2.new(0, 0, 0, 264)
 manualBox.BackgroundColor3 = BG_CODE
 manualBox.TextColor3 = TXT_MAIN
 manualBox.Font = Enum.Font.Code
@@ -344,125 +285,150 @@ manualBox.Visible = false
 manualBox.Parent = body
 Instance.new("UICorner", manualBox).CornerRadius = UDim.new(0, 6)
 
--- ===================== HELPERS =====================
-local function setBar(bar, pct, percent)
-    bar.Size = UDim2.new(percent / 100, 0, 1, 0)
-    pct.Text = math.floor(percent) .. "%"
-end
+-- ─── LAUNCHER (only visible when closed) ──────────
+local launcher = Instance.new("TextButton")
+launcher.AnchorPoint = Vector2.new(1, 1)
+launcher.Size = UDim2.new(0, 88, 0, 30)
+launcher.Position = UDim2.new(1, -16, 1, -16)
+launcher.BackgroundColor3 = BG_MAIN
+launcher.Text = ""
+launcher.AutoButtonColor = false
+launcher.Visible = false
+launcher.Parent = gui
+Instance.new("UICorner", launcher).CornerRadius = UDim.new(0, 10)
 
--- Smooth animated bar (uses Heartbeat for the percentage, TweenService for width)
-local function animateBar(bar, pct, targetPercent, duration)
+local launcherStroke = Instance.new("UIStroke")
+launcherStroke.Color = ACCENT
+launcherStroke.Thickness = 1
+launcherStroke.Transparency = 0.4
+launcherStroke.Parent = launcher
+
+local launcherDot = Instance.new("Frame")
+launcherDot.Size = UDim2.new(0, 12, 0, 12)
+launcherDot.Position = UDim2.new(0, 10, 0.5, -6)
+launcherDot.BackgroundColor3 = ACCENT2
+launcherDot.BorderSizePixel = 0
+launcherDot.Parent = launcher
+Instance.new("UICorner", launcherDot).CornerRadius = UDim.new(0, 4)
+
+local launcherLbl = Instance.new("TextLabel")
+launcherLbl.Size = UDim2.new(1, -28, 1, 0)
+launcherLbl.Position = UDim2.new(0, 26, 0, 0)
+launcherLbl.BackgroundTransparency = 1
+launcherLbl.Text = "Bname"
+launcherLbl.TextColor3 = TXT_MAIN
+launcherLbl.Font = Enum.Font.GothamBold
+launcherLbl.TextSize = 11
+launcherLbl.TextXAlignment = Enum.TextXAlignment.Left
+launcherLbl.Parent = launcher
+
+-- ─── ANIMATION HELPERS ────────────────────────────
+local seqId = 0
+local activeTweens = {}
+
+local function animateBar(bar, pct, targetPercent, duration, myId)
+    if activeTweens[bar] then activeTweens[bar]:Cancel() end
     local startPercent = bar.Size.X.Scale * 100
     local startTime = tick()
-    local finished = false
-
     local tween = TweenService:Create(
         bar,
         TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
         { Size = UDim2.new(targetPercent / 100, 0, 1, 0) }
     )
+    activeTweens[bar] = tween
 
     local conn
     conn = RunService.Heartbeat:Connect(function()
-        if finished then return end
+        if seqId ~= myId or not bar.Parent then conn:Disconnect() return end
         local elapsed = tick() - startTime
         local a = math.min(elapsed / duration, 1)
-        local eased = 1 - (1 - a) * (1 - a)  -- ease-out-quad
+        local eased = 1 - (1 - a) * (1 - a)
         pct.Text = math.floor(startPercent + (targetPercent - startPercent) * eased) .. "%"
     end)
 
     tween:Play()
     tween.Completed:Wait()
-    finished = true
     conn:Disconnect()
-    pct.Text = math.floor(targetPercent) .. "%"
+    if seqId == myId then pct.Text = math.floor(targetPercent) .. "%" end
 end
 
--- ===================== LOADING SEQUENCE =====================
-local function runSequence()
-    setBar(barLoad, pctLoad, 0)
-    setBar(barConn, pctConn, 0)
-    setBar(barKey,  pctKey,  0)
+local function resetBars()
+    barLoad.Size = UDim2.new(0, 0, 1, 0)
+    barConn.Size = UDim2.new(0, 0, 1, 0)
+    barKey.Size  = UDim2.new(0, 0, 1, 0)
+    pctLoad.Text = "0%"
+    pctConn.Text = "0%"
+    pctKey.Text  = "0%"
     keyNote.Visible = false
+end
+
+local function runSequence()
+    if not main.Visible then return end
+    seqId = seqId + 1
+    local myId = seqId
+    resetBars()
 
     task.wait(0.15)
-    animateBar(barLoad, pctLoad, 100, 1.0)
-    task.wait(0.2)
+    if seqId ~= myId then return end
+    animateBar(barLoad, pctLoad, 100, 1.0, myId)
+    if seqId ~= myId then return end
 
-    animateBar(barConn, pctConn, 100, 0.9)
-    task.wait(0.2)
+    task.wait(0.15)
+    if seqId ~= myId then return end
+    animateBar(barConn, pctConn, 100, 0.9, myId)
+    if seqId ~= myId then return end
 
-    animateBar(barKey,  pctKey,   58, 0.85)
+    task.wait(0.15)
+    if seqId ~= myId then return end
+    animateBar(barKey, pctKey, 58, 0.85, myId)
+    if seqId ~= myId then return end
     keyNote.Visible = true
 end
 
--- ===================== OPEN / CLOSE =====================
+-- ─── OPEN / CLOSE ─────────────────────────────────
+local lastPos = UDim2.new(0.5, 0, 0.5, 0)
+local canDrag = false
+
 local function openPanel()
-    if main.Visible then return end
+    canDrag = false
     main.Visible = true
     launcher.Visible = false
-    mainScale.Scale = 0.85
+    mainScale.Scale = 0.7
+    main.Position = UDim2.new(lastPos.X.Scale, lastPos.X.Offset, lastPos.Y.Scale, lastPos.Y.Offset + 32)
+    mainStroke.Transparency = 0.7
 
-    TweenService:Create(
-        mainScale,
-        TweenInfo.new(0.32, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-        { Scale = 1 }
-    ):Play()
+    TweenService:Create(mainScale, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+    TweenService:Create(main, TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Position = lastPos }):Play()
+    TweenService:Create(mainStroke, TweenInfo.new(0.5), { Transparency = 0.3 }):Play()
 
-    task.delay(0.05, function()
-        task.spawn(runSequence)
+    task.delay(0.55, function()
+        if main.Visible then
+            canDrag = true
+            task.spawn(runSequence)
+        end
     end)
 end
 
 local function closePanel()
-    if not main.Visible then return end
-    TweenService:Create(
-        mainScale,
-        TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-        { Scale = 0.82 }
-    ):Play()
-    task.wait(0.18)
+    canDrag = false
+    TweenService:Create(mainStroke, TweenInfo.new(0.2), { Transparency = 0.85 }):Play()
+    TweenService:Create(mainScale, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 0.7 }):Play()
+    local ct = TweenService:Create(
+        main,
+        TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        { Position = UDim2.new(lastPos.X.Scale, lastPos.X.Offset, lastPos.Y.Scale, lastPos.Y.Offset + 32) }
+    )
+    ct:Play()
+    ct.Completed:Wait()
     main.Visible = false
     launcher.Visible = true
-    mainScale.Scale = 1
 end
 
--- ===================== COPY LINK =====================
-local function tryCopy()
-    local funcs = { setclipboard, toclipboard, set_clipboard, toClipboard }
-    for _, f in ipairs(funcs) do
-        if type(f) == "function" then
-            local ok = pcall(f, LINK)
-            if ok then return true end
-        end
-    end
-    return false
-end
-
-local function copyLink()
-    if tryCopy() then
-        manualBox.Visible = false
-        local original = getKeyBtn.Text
-        getKeyBtn.Text = "COPIED!"
-        TweenService:Create(getKeyBtn, TweenInfo.new(0.12), { BackgroundColor3 = ACCENT }):Play()
-        task.wait(1.4)
-        getKeyBtn.Text = original
-        TweenService:Create(getKeyBtn, TweenInfo.new(0.12), { BackgroundColor3 = ACCENT2 }):Play()
-    else
-        manualBox.Visible = true
-        getKeyBtn.Text = "COPY MANUALLY"
-        task.wait(1.4)
-        getKeyBtn.Text = "GET KEY"
-    end
-end
-
-getKeyBtn.MouseButton1Click:Connect(copyLink)
-keyNote.MouseButton1Click:Connect(copyLink)
-
--- ===================== DRAGGING =====================
+-- ─── DRAG ─────────────────────────────────────────
 local dragging, dragStart, startPos
 
-local function startDrag(input)
+local function tryStartDrag(input)
+    if not canDrag then return end
     if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
@@ -471,12 +437,7 @@ local function startDrag(input)
     end
 end
 
-header.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-        startDrag(input)
-    end
-end)
+header.InputBegan:Connect(tryStartDrag)
 
 UserInputService.InputChanged:Connect(function(input)
     if not dragging then return end
@@ -493,37 +454,62 @@ end)
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
+        if dragging then
+            dragging = false
+            lastPos = main.Position
+        end
     end
 end)
 
--- ===================== BUTTON HOVER / CONNECTIONS =====================
+-- ─── COPY LINK ────────────────────────────────────
+local function tryCopy()
+    for _, f in ipairs({ setclipboard, toclipboard, set_clipboard, toClipboard }) do
+        if type(f) == "function" and pcall(f, LINK) then return true end
+    end
+    return false
+end
+
+local function copyLink()
+    if tryCopy() then
+        manualBox.Visible = false
+        local orig = getKeyBtn.Text
+        getKeyBtn.Text = "COPIED!"
+        TweenService:Create(getKeyBtn, TweenInfo.new(0.12), { BackgroundColor3 = ACCENT }):Play()
+        task.wait(1.4)
+        getKeyBtn.Text = orig
+        TweenService:Create(getKeyBtn, TweenInfo.new(0.12), { BackgroundColor3 = ACCENT2 }):Play()
+    else
+        manualBox.Visible = true
+    end
+end
+
+getKeyBtn.MouseButton1Click:Connect(copyLink)
+keyNote.MouseButton1Click:Connect(copyLink)
+
+-- ─── BUTTON CONNECTIONS ───────────────────────────
 launcher.MouseButton1Click:Connect(openPanel)
 closeBtn.MouseButton1Click:Connect(closePanel)
 
--- Launcher hover
 launcher.MouseEnter:Connect(function()
     TweenService:Create(launcherStroke, TweenInfo.new(0.2), { Transparency = 0.1 }):Play()
 end)
 launcher.MouseLeave:Connect(function()
-    TweenService:Create(launcherStroke, TweenInfo.new(0.2), { Transparency = 0.45 }):Play()
+    TweenService:Create(launcherStroke, TweenInfo.new(0.2), { Transparency = 0.4 }):Play()
 end)
 
--- Close button hover
 closeBtn.MouseEnter:Connect(function()
     TweenService:Create(closeBtn, TweenInfo.new(0.15), {
         BackgroundColor3 = Color3.fromRGB(120, 30, 50),
-        TextColor3 = Color3.fromRGB(255, 140, 160),
+        TextColor3 = Color3.fromRGB(255, 140, 160)
     }):Play()
 end)
 closeBtn.MouseLeave:Connect(function()
     TweenService:Create(closeBtn, TweenInfo.new(0.15), {
         BackgroundColor3 = BG_STAT,
-        TextColor3 = TXT_DIM,
+        TextColor3 = TXT_DIM
     }):Play()
 end)
 
--- Get Key hover
 getKeyBtn.MouseEnter:Connect(function()
     TweenService:Create(btnScale, TweenInfo.new(0.15), { Scale = 1.05 }):Play()
 end)
@@ -531,33 +517,34 @@ getKeyBtn.MouseLeave:Connect(function()
     TweenService:Create(btnScale, TweenInfo.new(0.15), { Scale = 1 }):Play()
 end)
 
--- ===================== AMBIENT ANIMATIONS =====================
--- Pulse main frame stroke
+-- ─── AMBIENT PULSES ───────────────────────────────
 task.spawn(function()
     while mainStroke.Parent do
-        TweenService:Create(mainStroke, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Transparency = 0.45 }):Play()
+        TweenService:Create(mainStroke, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Transparency = 0.35 }):Play()
         task.wait(2)
-        TweenService:Create(mainStroke, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Transparency = 0.85 }):Play()
+        TweenService:Create(mainStroke, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Transparency = 0.75 }):Play()
         task.wait(2)
     end
 end)
 
--- Pulse Get Key stroke
 task.spawn(function()
     while btnStroke.Parent do
         TweenService:Create(btnStroke, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Transparency = 0.1 }):Play()
         task.wait(1.2)
-        TweenService:Create(btnStroke, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Transparency = 0.6 }):Play()
+        TweenService:Create(btnStroke, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Transparency = 0.65 }):Play()
         task.wait(1.2)
     end
 end)
 
--- Pulse logo dot on launcher
 task.spawn(function()
-    while logoDot.Parent do
-        TweenService:Create(logoDot, TweenInfo.new(1.1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { BackgroundColor3 = ACCENT }):Play()
+    while launcherDot.Parent do
+        TweenService:Create(launcherDot, TweenInfo.new(1.1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { BackgroundColor3 = ACCENT }):Play()
         task.wait(1.1)
-        TweenService:Create(logoDot, TweenInfo.new(1.1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { BackgroundColor3 = ACCENT2 }):Play()
+        TweenService:Create(launcherDot, TweenInfo.new(1.1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { BackgroundColor3 = ACCENT2 }):Play()
         task.wait(1.1)
     end
 end)
+
+-- ─── KICK OFF ─────────────────────────────────────
+task.wait(0.3)
+openPanel()
